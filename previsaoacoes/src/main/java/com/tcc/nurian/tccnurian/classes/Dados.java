@@ -299,13 +299,12 @@ public class Dados {
         ArrayList<Double> listaOrganizada = new ArrayList<Double>(listaDados.stream().sorted().collect(Collectors.toList()));
         int qtn = listaOrganizada.size();
         double mediana = 0.0;
-        if (qtn % 2 == 0) {
-            mediana = listaOrganizada.get((qtn/2) - 1);
-            double proximo = listaOrganizada.get(qtn/2);
-            mediana = (mediana + proximo) / 2;
+        if (qtn % 2 == 0) { // par
+            double central1 = listaOrganizada.get((qtn/2) - 1); // n/1 (considerando o 0)
+            double central2 = listaOrganizada.get(qtn/2); // (n/2)+1 (considerando o 0)
+            mediana = (central1 + central2) / 2;
         } else {
-            Double centroArredondado = Math.floor(qtn/2);
-            mediana = listaOrganizada.get(centroArredondado.intValue());
+            mediana = listaOrganizada.get((qtn - 1)/2);
         }
             
         return mediana;
@@ -325,10 +324,10 @@ public class Dados {
         double skewness = (3*(media-mediana))/desvPad;
         BigDecimal skewnessBig = new BigDecimal(skewness);      
         
-        if((skewnessBig.compareTo(new BigDecimal(0.15)) == 1 // 0.15 < val < 1 
-                && Math.abs(skewness) <= 1)
-            || (skewnessBig.compareTo(new BigDecimal(-0.15)) == -1 // -1 < val < -0.15
-                && Math.abs(skewness) >= -1))
+        if((skewnessBig.compareTo(new BigDecimal(0.15)) == 1 // 0.15 < val
+                && skewness <= 1) // val < 1
+            || (skewnessBig.compareTo(new BigDecimal(-0.15)) == -1 // val < -0.15
+                && skewness >= -1)) // -1 < val
             System.out.print("Assimetria moderada");        
         
         else if(Math.abs(skewness) > 1)
@@ -358,7 +357,7 @@ public class Dados {
             sumMedia += Math.pow(listaDados.get(i) - media, 4);
         }
         
-        double kurtosis = sumMedia/(potenciaDesvPad*listaDados.size());
+        double kurtosis = sumMedia/(listaDados.size() * potenciaDesvPad);
             
         return kurtosis;
     }
@@ -372,12 +371,13 @@ public class Dados {
      * @return double
      */
     public double calculaMAE(ArrayList<Double> listaDadosReal, ArrayList<Double> listaDadosSintentico) {
-        double mae = 0.0;
+        double sumDif = 0.0;
         
         for (int i = 0; i < listaDadosReal.size(); i++) {
-            double sumDif = Math.abs(listaDadosReal.get(i) - listaDadosSintentico.get(i));
-            mae = sumDif / listaDadosReal.size();
+            sumDif += Math.abs(listaDadosSintentico.get(i) - listaDadosReal.get(i));
         }
+           
+        double mae = sumDif / listaDadosReal.size();
         
         return mae;
     }
@@ -391,12 +391,13 @@ public class Dados {
      * @return double
      */
     public double calculaMSE(ArrayList<Double> listaDadosReal, ArrayList<Double> listaDadosSintentico) {
-        double mse = 0.0;
+        double sumDifPow = 0.0;
         
         for (int i = 0; i < listaDadosReal.size(); i++) {
-            double sumDif = Math.pow(listaDadosReal.get(i) - listaDadosSintentico.get(i), 2);
-            mse = sumDif / listaDadosReal.size();
+            sumDifPow += Math.pow(listaDadosReal.get(i) - listaDadosSintentico.get(i), 2);
         }
+            
+        double mse = sumDifPow / listaDadosReal.size();
         
         return mse;
     }

@@ -24,7 +24,7 @@ public class TccNurian {
         ArrayList<MatrizTransicao> lstMatrizes = new ArrayList();
         lstMatrizes.add(matrizM0);
 
-        int passos = 90;
+        int passos = 180;
         int listSize = mkc.getConjuntoDados().getPrecosFechamento().size();
         Estado lastState = mkc.getConjuntoDados().getPrecosFechamento().get(listSize - 1).getEstado();
         double lastPrice = mkc.getConjuntoDados().getPrecosFechamento().get(listSize - 1).getPreco();
@@ -42,15 +42,15 @@ public class TccNurian {
             double[] vetorDistribuicaoMi = mkc.getDistribuicao().getDistribuicaoMi(matrizResultado);
 
             // projeção M(1) - Nurian
-            Preco precoFuturo = projecao.precoSintetico(lastPrice, vetorDistribuicaoMi, distribuicao_anterior, mkc.getStates(), mkc.getConjuntoDados().getDesvPad());
-            lastPrice = precoFuturo.getPreco();
+            //Preco precoFuturo = projecao.precoSintetico(lastPrice, vetorDistribuicaoMi, distribuicao_anterior, mkc.getStates(), mkc.getConjuntoDados().getDesvPad());
+            //lastPrice = precoFuturo.getPreco();
             
             // projeção M(2) - Zé
             //ArrayList<Double> vetorDistribuicaoAccMi = mkc.getDistribuicaoAcc(vetorDistribuicaoMi);
             //Preco precoFuturo = projecao.criarPrecoSintetico(vetorDistribuicaoAccMi, mkc.getStates(), mkc.getConjuntoDados().getDesvPad());
             
             // projeção do preço futuro com M(3) - Nurian novo
-            //Preco precoFuturo = projecao.getPrecoSintetico(lastState, lstMatrizes.get(lstMatrizes.size() - 1).getMatriz(), mkc.getStates(), mkc.getConjuntoDados().getDesvPad(), i);
+            Preco precoFuturo = projecao.getPrecoSintetico(lastState, lstMatrizes.get(lstMatrizes.size() - 1).getMatriz(), mkc.getStates(), mkc.getConjuntoDados().getDesvPad(), i);
             
             precoFuturo.setEstado(mkc.buscaEstado(precoFuturo)); // refatora o estado futuro, caso o valor, acressido da inflação, passe o limite
             
@@ -84,8 +84,8 @@ public class TccNurian {
         mkc.getConjuntoDados().lerDadosFuturosReaisCSV();
         ArrayList<Double> dadosReais = new ArrayList<Double>(mkc.getConjuntoDados().getPrecosFuturosReais().subList(0, passos));
 
-        mkc.getConjuntoDados().escreverDadosEmCSV("vivt/vivt-dados_reais_" + passos + "dias_formatado", dadosReais);
-        mkc.getConjuntoDados().escreverDadosEmCSV("vivt/vivt-dados_sinteticos_" + passos + "dias_formatado", lst);
+        mkc.getConjuntoDados().escreverDadosEmCSV("ggbr/ggbr-dados_reais_" + passos + "dias_formatado", dadosReais);
+        mkc.getConjuntoDados().escreverDadosEmCSV("ggbr/ggbr-dados_sinteticos_" + passos + "dias_formatado", lst);
 
         System.out.println("\t\t Real \t \t Sintético");
 
