@@ -44,24 +44,25 @@ public class Projecao {
      * posição do vetor que mais variou para cima. Retorna o valor inicial desse
      * estado + (valor aleatório * desvio padrão)
      *
-     * @param distribuicao_i
-     * @param distribuicao_m0
+     * @param ultimoPreco
+     * @param distribuicao_mi
+     * @param distribuicao_anterior
      * @param estados
-     * @param desvPred
+     * @param metadeDesvPred
      * @return double
      */
-    public Preco precoSintetico(double lastPrice, double[] distribuicao_i, double[] distribuicao_m0, ArrayList<Estado> estados, double desvPred) {
-        double preco = lastPrice;
+    public Preco precoSinteticoM1(double ultimoPreco, double[] distribuicao_mi, double[] distribuicao_anterior, ArrayList<Estado> estados, double metadeDesvPred) {
+        double preco = ultimoPreco;
         double diferenca = 0.0;
 
         double aleatorioGerado = this.aleatorio.nextDouble();
-        for (int j = 0; j < distribuicao_i.length; j++) {
-            if (distribuicao_i[j] >= distribuicao_m0[j]) {
-                double prox_diferenca = distribuicao_i[j] - distribuicao_m0[j];
+        for (int j = 0; j < distribuicao_mi.length; j++) {
+            if (distribuicao_mi[j] >= distribuicao_anterior[j]) {
+                double prox_diferenca = distribuicao_mi[j] - distribuicao_anterior[j];
 
                 if (diferenca == 0.0 || prox_diferenca > diferenca) {
                     diferenca = prox_diferenca;
-                    double fator = aleatorioGerado * desvPred;
+                    double fator = aleatorioGerado * metadeDesvPred;
                     preco = fator + estados.get(j).getInicio();
                     // System.out.println("Estado: " + estados.get(j).getNome());
                 }
@@ -80,15 +81,15 @@ public class Projecao {
      * posição do vetor que mais variou para cima. Retorna o valor inicial desse
      * estado + (valor aleatório * desvio padrão)
      *
-     * @param lastState
+     * @param ultimoPreco
      * @param matriz
      * @param estados
-     * @param desvPred
+     * @param metadeDesvPred
      * @param passo
      * @return Preco
      */
-    public Preco getPrecoSintetico(Estado lastState, double[][] matriz, ArrayList<Estado> estados, double desvPred, int passo) {
-        int indiceEstado = lastState.getNome() - 1;
+    public Preco precoSinteticoM3(Estado ultimoPreco, double[][] matriz, ArrayList<Estado> estados, double metadeDesvPred, int passo) {
+        int indiceEstado = ultimoPreco.getNome() - 1;
         double maior = matriz[indiceEstado][0];
         int indiceProxEstado = 0;
         double aleatorioGerado = this.aleatorio.nextDouble();
@@ -105,11 +106,10 @@ public class Projecao {
         
         // o que gera a pertubação para tentar fugir de loops eternos é a divisão pela probabilidade de transição para o estado futuro
             // quanto maior, mais provavel de "fator" ser um número dentro do estado encontrtado - quanto menor, "fator" + inicio irá "fugir" desse estado
-        double fator = (aleatorioGerado * desvPred)/maior;
+        double fator = (aleatorioGerado * metadeDesvPred)/maior;
         double valorNoIntervFuturo = fator + estados.get(indiceProxEstado).getInicio();
         
-        double preco = valorNoIntervFuturo; 
-        Preco precoFuturo = new Preco(preco);
+        Preco precoFuturo = new Preco(valorNoIntervFuturo);
         return precoFuturo;
     }
 
@@ -124,7 +124,7 @@ public class Projecao {
      * @param desvPred
      * @return precoSintetico
      */
-    public Preco criarPrecoSintetico(ArrayList<Double> distribuicaoAccMi, ArrayList<Estado> estados, double desvPred) {
+    public Preco precoSinteticoM2(ArrayList<Double> distribuicaoAccMi, ArrayList<Estado> estados, double desvPred) {
         double precoSintetico = 0.0;
 
         double aleatorioGerado = this.aleatorio.nextDouble();

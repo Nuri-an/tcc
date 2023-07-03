@@ -23,7 +23,7 @@ public class Dados {
 
     private ArrayList<Preco> precosFechamento;
     private ArrayList<Double> precosFuturosReais;
-    private double desvPadBase;
+    private double metadeDesvPad;
     private double valMin;
     private double valMax;
     private int qtnTotal;
@@ -49,7 +49,7 @@ public class Dados {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        this.desvPadBase = 0;
+        this.metadeDesvPad = 0;
         this.valMin = 0;
         this.valMax = 0;
         this.qtnTotal = this.precosFechamento.size();
@@ -87,15 +87,15 @@ public class Dados {
     /**
      * @return the desvPad
      */
-    public double getDesvPad() {
-        return desvPadBase;
+    public double getMetadeDesvPad() {
+        return metadeDesvPad;
     }
 
     /**
      * @param desvPad the desvPad to set
      */
-    public void setDesvPad(double desvPad) {
-        this.desvPadBase = desvPad;
+    public void setMetadeDesvPad(double desvPad) {
+        this.metadeDesvPad = desvPad;
     }
 
     /**
@@ -285,8 +285,8 @@ public class Dados {
             precoDadosBase.add(this.precosFechamento.get(i).getPreco());
         }
         
-        this.desvPadBase = calculaDesvPad(precoDadosBase)*0.5;
-        System.err.println("Desvio padrao base: " + this.desvPadBase);
+        this.metadeDesvPad = calculaDesvPad(precoDadosBase)*0.5;
+        System.err.println("Desvio padrao base: " + this.metadeDesvPad);
     }
     
     /**

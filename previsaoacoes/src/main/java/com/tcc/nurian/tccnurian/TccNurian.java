@@ -24,60 +24,61 @@ public class TccNurian {
         ArrayList<MatrizTransicao> lstMatrizes = new ArrayList();
         lstMatrizes.add(matrizM0);
 
-        int passos = 180;
-        int listSize = mkc.getConjuntoDados().getPrecosFechamento().size();
-        Estado lastState = mkc.getConjuntoDados().getPrecosFechamento().get(listSize - 1).getEstado();
-        double lastPrice = mkc.getConjuntoDados().getPrecosFechamento().get(listSize - 1).getPreco();
+        // número de dias futuros para realizar as previsões
+        int passos = 60;
+        int tamanhoLista = mkc.getConjuntoDados().getPrecosFechamento().size();
+        Estado ultimoEstado = mkc.getConjuntoDados().getPrecosFechamento().get(tamanhoLista - 1).getEstado();
+        double ultimoPreco = mkc.getConjuntoDados().getPrecosFechamento().get(tamanhoLista - 1).getPreco();
         
         for (int i = 1; i < passos + 1; i++) {
             double matrizResultado[][] = matrizM0.getMatriz();
 
-            // multiplica as diferentes matrizes da cadeia até o tempo n
+            // obtem a matriz no tempo n
             for (int k = 1; k < lstMatrizes.size(); k++) {
                 double produtoMatrizes[][] = matrizM0.produto(matrizResultado, lstMatrizes.get(k).getMatriz());
                 matrizResultado = produtoMatrizes;
             }
 
-            // multiplica o vetor M0 pelo resultado da multiplicação das matrizes
+            // obtem o vetor no tempo n
             double[] vetorDistribuicaoMi = mkc.getDistribuicao().getDistribuicaoMi(matrizResultado);
 
-            // projeção M(1) - Nurian
-            //Preco precoFuturo = projecao.precoSintetico(lastPrice, vetorDistribuicaoMi, distribuicao_anterior, mkc.getStates(), mkc.getConjuntoDados().getDesvPad());
-            //lastPrice = precoFuturo.getPreco();
+            // modelo M(1)
+            //Preco precoFuturo = projecao.precoSinteticoM1(ultimoPreco, vetorDistribuicaoMi, distribuicao_anterior, mkc.getEstados(), mkc.getConjuntoDados().getMetadeDesvPad());
+            //ultimoPreco = precoFuturo.getPreco();
             
-            // projeção M(2) - Zé
+            // modelo M(2)
             //ArrayList<Double> vetorDistribuicaoAccMi = mkc.getDistribuicaoAcc(vetorDistribuicaoMi);
-            //Preco precoFuturo = projecao.criarPrecoSintetico(vetorDistribuicaoAccMi, mkc.getStates(), mkc.getConjuntoDados().getDesvPad());
+            //Preco precoFuturo = projecao.precoSinteticoM2(vetorDistribuicaoAccMi, mkc.getEstados(), mkc.getConjuntoDados().getMetadeDesvPad());
             
-            // projeção do preço futuro com M(3) - Nurian novo
-            Preco precoFuturo = projecao.getPrecoSintetico(lastState, lstMatrizes.get(lstMatrizes.size() - 1).getMatriz(), mkc.getStates(), mkc.getConjuntoDados().getDesvPad(), i);
+            // modelo M(3)
+            Preco precoFuturo = projecao.precoSinteticoM3(ultimoEstado, lstMatrizes.get(lstMatrizes.size() - 1).getMatriz(), mkc.getEstados(), mkc.getConjuntoDados().getMetadeDesvPad(), i);
             
             precoFuturo.setEstado(mkc.buscaEstado(precoFuturo)); // refatora o estado futuro, caso o valor, acressido da inflação, passe o limite
             
-            int estadoAtualIndice = lastState.getNome() - 1;
-            Estado estadoDestino = mkc.getStates().get(precoFuturo.getEstado().getNome() - 1);
+            int estadoAtualIndice = ultimoEstado.getNome() - 1;
+            Estado estadoDestino = mkc.getEstados().get(precoFuturo.getEstado().getNome() - 1);
             int estadoDestinoIndice = estadoDestino.getNome() - 1;
-            Transicao transicao = lastState.getTransicao().get(estadoDestinoIndice);
+            Transicao transicao = ultimoEstado.getTransicao().get(estadoDestinoIndice);
 
             // atualiza quantidades considerando a transição para o novo estado
             estadoDestino.setQtnItens(estadoDestino.getQtnItens() + 1);
             transicao.setQtn(transicao.getQtn() + 1);
-            double qtnItensEstados = lastState.getQtnItens();
+            double qtnItensEstado = ultimoEstado.getQtnItens();
 
             //  cria uma nova matriz com a probabilidade do estado atual para os demais diferente
-            MatrizTransicao newMatriz = lstMatrizes.get(lstMatrizes.size() - 1);            
-            for (int j = 0; j < newMatriz.getMatriz().length; j++) {
-                double qtnTransicoes = lastState.getTransicao().get(j).getQtn();
-                double probTransicao = qtnTransicoes / qtnItensEstados;
+            MatrizTransicao novaMatriz = lstMatrizes.get(lstMatrizes.size() - 1);            
+            for (int j = 0; j < novaMatriz.getMatriz().length; j++) {
+                double qtnTransicoes = ultimoEstado.getTransicao().get(j).getQtn();
+                double probTransicao = qtnTransicoes / qtnItensEstado;
                 
-                newMatriz.getMatriz()[estadoAtualIndice][j] = probTransicao;
+                novaMatriz.getMatriz()[estadoAtualIndice][j] = probTransicao;
             }
 
             
-            lstMatrizes.add(newMatriz);
+            lstMatrizes.add(novaMatriz);
             lst.add(precoFuturo.getPreco());
             distribuicao_anterior = vetorDistribuicaoMi;
-            lastState = precoFuturo.getEstado();            
+            ultimoEstado = precoFuturo.getEstado();            
         }
 
         imprime(lst);
